@@ -16,6 +16,8 @@ import { logoutUser } from "@/redux-store/slices/authSlice";
 import { useAuth } from "@/hooks/useAuth";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "@/redux-store";
+import ThemeToggle from "../ui/theme-toggle";
+import { Button } from "../ui/button";
 
 const TopBar = () => {
    const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -92,19 +94,21 @@ const TopBar = () => {
                </Breadcrumb>
             </div>
             <div className="flex items-center gap-3">
+               <ThemeToggle />
                <div
                   className="relative"
                   ref={notificationRef}>
-                  <button
+                  <Button
                      onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                     className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                     variant="outline"
+                     size="icon">
                      <Bell className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                      {unreadCount > 0 && (
                         <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
                            {unreadCount}
                         </span>
                      )}
-                  </button>
+                  </Button>
 
                   {isNotificationOpen && (
                      <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
@@ -145,22 +149,24 @@ const TopBar = () => {
                   )}
                </div>
 
-               <button
+               <Button
                   onClick={toggleFullscreen}
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                  variant="outline"
+                  size="icon">
                   <Maximize className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-               </button>
+               </Button>
 
                <div
                   className="relative"
                   ref={profileRef}>
-                  <button
+                  <Button
                      onClick={() => setIsProfileOpen(!isProfileOpen)}
-                     className="flex items-center gap-2 p-1  rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                     variant="ghost"
+                     size="icon">
                      <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center  text-xs font-semibold">
                         {user?.username?.slice(0, 2).toUpperCase() || "US"}
                      </div>
-                  </button>
+                  </Button>
 
                   {isProfileOpen && (
                      <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">

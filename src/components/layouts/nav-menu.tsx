@@ -45,15 +45,15 @@ export function NavMain({ items }: { items: NavItem[] }) {
          "group/button relative py-4 cursor-pointer  transition-all duration-300 ease-out transform",
          "hover:scale-[1.02]  hover:shadow-primary/20",
          "hover:bg-gradient-to-r hover:from-primary/5 hover:to-primary/10",
-         " hover:backdrop-blur-sm",
+         "",
          "dark:hover:from-primary/40 dark:hover:to-primary/20 dark:hover:text-primary",
          "focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none",
          "rounded-[8px] border border-transparent hover:border-primary/50 dark:hover:border-primary/50",
          isActive && [
             "bg-gradient-to-r from-primary via-primary  text-primary-foreground to-primary font-semibold",
             "shadow-sm shadow-primary/30 border-primary/20 scale-[1.02]",
-            "hover:from-primary hover:text-primary-foreground hover:via-primary hover:to-primary hover:shadow-xl hover:shadow-primary/40",
-            "dark:from-primary dark:via-primary dark:to-primary dark:shadow-primary/20",
+            "hover:bg-primary hover:text-primary-foreground hover:via-primary hover:to-primary hover:shadow-xl hover:shadow-primary/40",
+            "dark:from-primary dark:via-primary  dark:hover:text-primary-foreground dark:to-primary dark:shadow-primary/20",
             "before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-8 before:w-1",
          ]
       );

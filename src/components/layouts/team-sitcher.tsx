@@ -16,7 +16,7 @@ export function TeamSwitcher() {
                />
             </div>
             <div className="grid flex-1 justify-start  items-center text-left text-sm font-semibold leading-tight">
-               <span className="truncate flex-col flex w-full text-[22px] pb-[3px] text-[#000000] ">
+               <span className="truncate flex-col flex w-full text-[22px] pb-[3px]  ">
                   <span className="text-[18px] font-bold">KidzTube</span>{" "}
                   <span className="text-sm">Studio</span>
                </span>
