@@ -1,5 +1,11 @@
+import ContentContainer from "./ContentContainer";
+
 const HomeContentFeedPage = () => {
-   return <div></div>;
+   return (
+      <div>
+         <ContentContainer />
+      </div>
+   );
 };
 
 export default HomeContentFeedPage;

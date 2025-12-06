@@ -4,7 +4,7 @@ export const publicContentApi = apiSlice.injectEndpoints({
    endpoints: (builder) => ({
       // Get all public content (with pagination + filters)
       getPublicContents: builder.query({
-         query: ({ page = 1, limit = 10, category, search }) => ({
+         query: ({ page = 0, limit = 10, category, search }) => ({
             url: `/content`,
             method: "GET",
             params: { page, limit, category, search },
