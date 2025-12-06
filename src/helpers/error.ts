@@ -3,15 +3,31 @@ import { toast } from "sonner";
 type ErrorItem = { message?: string };
 
 export function displayErrors(error: unknown, fallbackMessage = "Something went wrong") {
-   const errorList = (error as { data?: { errors?: ErrorItem[] } })?.data?.errors;
+   console.error("Error caught:", error);
 
-   if (Array.isArray(errorList) && errorList.length > 0) {
-      errorList.forEach((err: ErrorItem) => {
-         toast.error(err.message || fallbackMessage);
-      });
-   } else {
-      toast.error(fallbackMessage);
+   const err = error as any;
+
+   // 1. Direct backend message → { message: "URL already exists." }
+   if (err?.data?.message) {
+      toast.error(err.data.message);
+      return;
    }
 
-   console.error("Error caught:", error);
+   // 2. Standard error.message (JS/Fetch/RTKQ)
+   if (err?.message) {
+      toast.error(err.message);
+      return;
+   }
+
+   // 3. Backend validation errors:  { errors: [ { message: "..." } ] }
+   const errorList = err?.data?.errors;
+   if (Array.isArray(errorList) && errorList.length > 0) {
+      errorList.forEach((e: ErrorItem) => {
+         toast.error(e.message || fallbackMessage);
+      });
+      return;
+   }
+
+   // 4. Fallback message
+   toast.error(fallbackMessage);
 }

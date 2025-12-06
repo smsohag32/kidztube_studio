@@ -6,7 +6,7 @@ import { TeamSwitcher } from "./team-sitcher";
 import { NavMain } from "./nav-menu";
 import { NavUser } from "./nav-user";
 
-import { House } from "lucide-react";
+import { House, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { filterNavItems, permissionHelper } from "@/helpers/permissions";
 
@@ -16,6 +16,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
          title: "Home",
          url: "/",
          icon: House,
+      },
+      {
+         title: "Post Content",
+         url: "/content/post",
+         icon: Plus,
       },
    ];
 

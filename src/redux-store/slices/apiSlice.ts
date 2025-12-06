@@ -23,6 +23,6 @@ const customBaseQuery = async (args: any, api: any, extraOptions: any) => {
 export const apiSlice = createApi({
    reducerPath: "api",
    baseQuery: customBaseQuery,
-   tagTypes: ["roles", "users"],
+   tagTypes: ["roles", "users", "content"],
    endpoints: () => ({}),
 });
