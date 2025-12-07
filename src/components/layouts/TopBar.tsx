@@ -18,6 +18,7 @@ import { useDispatch } from "react-redux";
 import type { AppDispatch } from "@/redux-store";
 import ThemeToggle from "../ui/theme-toggle";
 import { Button } from "../ui/button";
+import SearchBox from "./SearchBox";
 
 const TopBar = () => {
    const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -93,6 +94,8 @@ const TopBar = () => {
                   </BreadcrumbList>
                </Breadcrumb>
             </div>
+
+            <SearchBox />
             <div className="flex items-center gap-3">
                <ThemeToggle />
                <div
