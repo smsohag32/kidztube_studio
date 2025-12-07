@@ -10,7 +10,7 @@ export default function Dashboard() {
          <AppSidebar className="" />
          <SidebarInset>
             <TopBar />
-            <div className="flex flex-1 mt-1.5 flex-col gap-4 px-4 pb-6 pt-2  rounded-[8px] ">
+            <div className="flex  flex-1 mt-1.5 flex-col gap-4 px-4 pb-6 pt-2  rounded-[8px] ">
                <Outlet />
             </div>
             <ScrollRestoration />

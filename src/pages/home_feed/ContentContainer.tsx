@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Play, Heart, Share2, Loader2, ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // Types
 interface ContentItem {
@@ -83,7 +84,8 @@ const formatRelativeTime = (date: string): string => {
 };
 
 // Video Card Component
-const VideoCard: FC<VideoCardProps> = ({ content, onPlay }) => {
+const VideoCard: FC<VideoCardProps> = ({ content }) => {
+   const navigate = useNavigate();
    const youtubeId = extractYouTubeId(content.url);
    const thumbnailUrl =
       content.image && content.image !== "No image available"
@@ -92,21 +94,22 @@ const VideoCard: FC<VideoCardProps> = ({ content, onPlay }) => {
          ? `https://i.ytimg.com/vi/${youtubeId}/maxresdefault.jpg`
          : null;
 
-   const handleOpenUrl = (e: React.MouseEvent) => {
+   const handleWatch = (e: React.MouseEvent) => {
       e.stopPropagation();
-      window.open(content.url, "_blank");
+      navigate(`/content?id=${content._id}`);
    };
 
    return (
       <Card className="group overflow-hidden gap-0 cursor-pointer hover:shadow-lg transition-all duration-300  p-0 border-0">
          {/* Thumbnail Container */}
-         <div className="relative overflow-hidden bg-black aspect-video">
+         <div
+            onClick={handleWatch}
+            className="relative overflow-hidden bg-black aspect-video">
             {thumbnailUrl ? (
                <img
                   src={thumbnailUrl}
                   alt={content.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  onClick={handleOpenUrl}
                />
             ) : (
                <div className="w-full h-full flex items-center justify-center bg-muted">
@@ -117,7 +120,7 @@ const VideoCard: FC<VideoCardProps> = ({ content, onPlay }) => {
             {/* Play Button Overlay */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
                <button
-                  onClick={handleOpenUrl}
+                  onClick={handleWatch}
                   className="opacity-0 cursor-pointer group-hover:opacity-100 transition-opacity duration-300 p-3 rounded-full bg-white/90 hover:bg-white shadow-lg"
                   aria-label="Play video">
                   <Play className="w-6 h-6 text-black fill-black" />
@@ -171,7 +174,7 @@ const VideoCard: FC<VideoCardProps> = ({ content, onPlay }) => {
 
 // Skeleton Loading Card
 const VideoCardSkeleton: FC = () => (
-   <Card className="overflow-hidden bg-background border-0">
+   <Card className="overflow-hidden gap-2 bg-background border-0">
       <Skeleton className="aspect-video w-full" />
       <CardContent className="p-3 space-y-2">
          <Skeleton className="h-4 w-full" />
