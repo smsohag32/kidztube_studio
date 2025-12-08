@@ -1,13 +1,16 @@
 import { useGetPublicContentsQuery } from "@/redux-store/apis_action/content";
-import { useState, type FC, useMemo } from "react";
+import { useState, type FC, useEffect, useCallback, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Play, Heart, Share2, Loader2, ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
+import { Play, Heart, Share2, ImageOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { RootState } from "@/redux-store";
 import { useSelector } from "react-redux";
+
+// Constants
+const BATCH_SIZE = 12;
+const MAX_ITEMS_IN_MEMORY = 100;
 
 // Types
 interface ContentItem {
@@ -48,13 +51,13 @@ interface ContentResponse {
 
 interface VideoCardProps {
    content: ContentItem;
-   onPlay: (content: ContentItem) => void;
 }
 
 interface VideoGridProps {
    contents: ContentItem[];
-   onPlay: (content: ContentItem) => void;
-   isLoading: boolean;
+   isFetching: boolean;
+   hasMore: boolean;
+   onLoadMore: () => void;
 }
 
 // Extract YouTube video ID
@@ -89,6 +92,7 @@ const formatRelativeTime = (date: string): string => {
 const VideoCard: FC<VideoCardProps> = ({ content }) => {
    const navigate = useNavigate();
    const youtubeId = extractYouTubeId(content.url);
+
    const thumbnailUrl =
       content.image && content.image !== "No image available"
          ? content.image
@@ -102,8 +106,7 @@ const VideoCard: FC<VideoCardProps> = ({ content }) => {
    };
 
    return (
-      <Card className="group overflow-hidden gap-0 cursor-pointer hover:shadow-lg transition-all duration-300  p-0 border-0">
-         {/* Thumbnail Container */}
+      <Card className="group overflow-hidden gap-0 cursor-pointer hover:shadow-lg transition-all duration-300 p-0 border-0">
          <div
             onClick={handleWatch}
             className="relative overflow-hidden bg-black aspect-video">
@@ -119,52 +122,43 @@ const VideoCard: FC<VideoCardProps> = ({ content }) => {
                </div>
             )}
 
-            {/* Play Button Overlay */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
                <button
                   onClick={handleWatch}
-                  className="opacity-0 cursor-pointer group-hover:opacity-100 transition-opacity duration-300 p-3 rounded-full bg-white/90 hover:bg-white shadow-lg"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-3 rounded-full bg-white/90 hover:bg-white shadow-lg"
                   aria-label="Play video">
                   <Play className="w-6 h-6 text-black fill-black" />
                </button>
             </div>
 
-            {/* Duration Badge */}
             {content.duration && (
                <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-semibold px-2 py-1 rounded">
                   {content.duration}
                </div>
             )}
 
-            {/* Category Badge */}
             <div className="absolute top-2 left-2">
-               <Badge
-                  variant="secondary"
-                  className="bg-black/70 text-white hover:bg-black/80 text-xs capitalize">
+               <Badge className="bg-black/70 text-white text-xs capitalize">
                   {content.category}
                </Badge>
             </div>
          </div>
 
-         {/* Content Info */}
          <CardContent className="p-3 space-y-2">
-            {/* Title */}
             <h3 className="text-sm font-semibold line-clamp-2 group-hover:text-primary transition-colors">
                {content.title}
             </h3>
-
-            {/* Channel and Meta Info */}
 
             <div className="flex flex-row justify-between mt-auto gap-4">
                <div className="space-y-1 text-xs text-muted-foreground">
                   <p className="font-medium text-foreground/70">{content.addedBy}</p>
                   <p className="line-clamp-1">{formatRelativeTime(content.createdAt)}</p>
-               </div>{" "}
-               <div className="flex gap-2 pt-2  opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <button className="flex items-center justify-center gap-1 text-xs font-medium py-1 px-2 rounded hover:bg-muted transition-colors">
+               </div>
+               <div className="flex gap-2 pt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <button className="flex items-center justify-center gap-1 text-xs font-medium py-1 px-2 rounded hover:bg-muted">
                      <Heart className="w-3 h-3" />
                   </button>
-                  <button className="flex items-center justify-center gap-1 text-xs font-medium py-1 px-2 rounded hover:bg-muted transition-colors">
+                  <button className="flex items-center justify-center gap-1 text-xs font-medium py-1 px-2 rounded hover:bg-muted">
                      <Share2 className="w-3 h-3" />
                   </button>
                </div>
@@ -186,21 +180,114 @@ const VideoCardSkeleton: FC = () => (
    </Card>
 );
 
-// Video Grid Component
-const VideoGrid: FC<VideoGridProps> = ({ contents, onPlay, isLoading }) => {
-   if (isLoading) {
-      return (
+// Video Grid Component with Intersection Observer
+const VideoGrid: FC<VideoGridProps> = ({ contents, isFetching, hasMore, onLoadMore }) => {
+   const loaderRef = useRef<HTMLDivElement>(null);
+
+   // Smooth stable observer
+   useEffect(() => {
+      const node = loaderRef.current;
+      if (!node) return;
+
+      const observer = new IntersectionObserver(
+         (entries) => {
+            const entry = entries[0];
+            if (entry.isIntersecting && hasMore && !isFetching) {
+               onLoadMore();
+            }
+         },
+         {
+            root: null,
+            rootMargin: "300px",
+            threshold: 0,
+         }
+      );
+
+      observer.observe(node);
+
+      return () => {
+         observer.unobserve(node);
+         observer.disconnect();
+      };
+   }, [hasMore, isFetching, onLoadMore]);
+
+   return (
+      <div className="space-y-4">
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
-            {[...Array(8)].map((_, i) => (
-               <VideoCardSkeleton key={i} />
+            {contents.map((content) => (
+               <VideoCard
+                  key={content._id}
+                  content={content}
+               />
             ))}
          </div>
-      );
-   }
 
-   if (!contents || contents.length === 0) {
+         {isFetching && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
+               {[...Array(3)].map((_, i) => (
+                  <VideoCardSkeleton key={i} />
+               ))}
+            </div>
+         )}
+
+         {/* observer trigger */}
+         <div
+            ref={loaderRef}
+            className="h-5"
+         />
+
+         {!hasMore && (
+            <div className="flex justify-center py-8">
+               <p className="text-sm text-muted-foreground">No more content to load</p>
+            </div>
+         )}
+      </div>
+   );
+};
+
+// Main Container Component
+const ContentContainer: FC = () => {
+   const [allContents, setAllContents] = useState<ContentItem[]>([]);
+   const [page, setPage] = useState<number>(0);
+   const [hasMore, setHasMore] = useState<boolean>(true);
+   const searchValue = useSelector((state: RootState) => state.search.searchValue);
+
+   const { data, isLoading, isFetching } = useGetPublicContentsQuery({
+      page,
+      limit: BATCH_SIZE,
+      search: searchValue,
+   }) as { data?: ContentResponse; isLoading: boolean; isFetching: boolean };
+
+   // Reset on search
+   useEffect(() => {
+      setPage(0);
+      setAllContents([]);
+      setHasMore(true);
+   }, [searchValue]);
+
+   // Add new content
+   useEffect(() => {
+      if (data?.data?.content) {
+         setAllContents((prev) => {
+            const combined = [...prev, ...data.data.content];
+            const unique = Array.from(new Map(combined.map((i) => [i._id, i])).values());
+
+            return unique.slice(-MAX_ITEMS_IN_MEMORY);
+         });
+
+         setHasMore(data.data.pagination?.hasNext ?? false);
+      }
+   }, [data]);
+
+   const handleLoadMore = useCallback(() => {
+      if (!isFetching && hasMore) {
+         setPage((p) => p + 1);
+      }
+   }, [isFetching, hasMore]);
+
+   if (!allContents || allContents.length === 0) {
       return (
-         <div className="flex flex-col items-center justify-center py-16">
+         <div className="flex animate-in fade-in duration-500 flex-col items-center justify-center py-16">
             <ImageOff className="w-16 h-16 text-muted-foreground/30 mb-4" />
             <h3 className="text-lg font-semibold text-muted-foreground">No content found</h3>
             <p className="text-sm text-muted-foreground/70">Check back later for new videos</p>
@@ -209,101 +296,21 @@ const VideoGrid: FC<VideoGridProps> = ({ contents, onPlay, isLoading }) => {
    }
 
    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
-         {contents.map((content) => (
-            <VideoCard
-               key={content._id}
-               content={content}
-               onPlay={onPlay}
-            />
-         ))}
-      </div>
-   );
-};
-
-// Main Container Component
-const ContentContainer: FC = () => {
-   const [page, setPage] = useState<number>(0);
-   const searchValue = useSelector((state: RootState) => state.search.searchValue);
-   const { data, isLoading, isFetching } = useGetPublicContentsQuery({
-      page,
-      limit: 20,
-      search: searchValue,
-   }) as { data?: ContentResponse; isLoading: boolean; isFetching: boolean };
-
-   const contents = useMemo(() => data?.data?.content || [], [data]);
-   const pagination = useMemo(() => data?.data?.pagination, [data]);
-
-   const handlePlayVideo = (content: ContentItem) => {
-      window.open(content.url, "_blank");
-   };
-
-   const handleNextPage = () => {
-      if (pagination?.hasNext) {
-         setPage((prev) => prev + 1);
-         window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-   };
-
-   const handlePrevPage = () => {
-      if (pagination?.hasPrevious) {
-         setPage((prev) => prev - 1);
-         window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-   };
-
-   return (
       <div className="min-h-screen bg-background">
-         {/* Main Content */}
-         <div className="">
-            <VideoGrid
-               contents={contents}
-               onPlay={handlePlayVideo}
-               isLoading={isLoading || isFetching}
-            />
-
-            {/* Pagination Controls */}
-            {pagination && pagination.totalPages > 1 && (
-               <div className="flex items-center justify-center gap-4 mt-12">
-                  <Button
-                     onClick={handlePrevPage}
-                     disabled={!pagination.hasPrevious || isFetching}
-                     variant="outline"
-                     className="gap-2">
-                     <ChevronLeft className="w-4 h-4" />
-                     Previous
-                  </Button>
-
-                  <div className="flex items-center gap-2">
-                     {[...Array(pagination.totalPages)].map((_, i) => (
-                        <Button
-                           key={i}
-                           onClick={() => setPage(i)}
-                           variant={page === i ? "default" : "outline"}
-                           size="sm"
-                           className="w-10">
-                           {i + 1}
-                        </Button>
-                     ))}
-                  </div>
-
-                  <Button
-                     onClick={handleNextPage}
-                     disabled={!pagination.hasNext || isFetching}
-                     variant="outline"
-                     className="gap-2">
-                     Next
-                     <ChevronRight className="w-4 h-4" />
-                  </Button>
+         <div className="w-full">
+            {isLoading && allContents.length === 0 ? (
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
+                  {[...Array(9)].map((_, i) => (
+                     <VideoCardSkeleton key={i} />
+                  ))}
                </div>
-            )}
-
-            {/* Loading Indicator */}
-            {isFetching && (
-               <div className="flex items-center justify-center gap-2 mt-8">
-                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">Loading content...</span>
-               </div>
+            ) : (
+               <VideoGrid
+                  contents={allContents}
+                  isFetching={isFetching}
+                  hasMore={hasMore}
+                  onLoadMore={handleLoadMore}
+               />
             )}
          </div>
       </div>
