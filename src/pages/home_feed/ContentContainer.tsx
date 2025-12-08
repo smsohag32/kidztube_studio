@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Play, Heart, Share2, Loader2, ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import type { RootState } from "@/redux-store";
+import { useSelector } from "react-redux";
 
 // Types
 interface ContentItem {
@@ -222,9 +224,11 @@ const VideoGrid: FC<VideoGridProps> = ({ contents, onPlay, isLoading }) => {
 // Main Container Component
 const ContentContainer: FC = () => {
    const [page, setPage] = useState<number>(0);
+   const searchValue = useSelector((state: RootState) => state.search.searchValue);
    const { data, isLoading, isFetching } = useGetPublicContentsQuery({
       page,
       limit: 20,
+      search: searchValue,
    }) as { data?: ContentResponse; isLoading: boolean; isFetching: boolean };
 
    const contents = useMemo(() => data?.data?.content || [], [data]);

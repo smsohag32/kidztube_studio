@@ -1,12 +1,22 @@
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { Search, Mic, X } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+   setSearchValue,
+   setSuggestions,
+   setShowSuggestions,
+   setIsListening,
+   setIsFocused,
+   clearSearch,
+} from "@/redux-store/slices/searchSlice";
+import type { RootState } from "@/redux-store";
 
 const SearchBox: React.FC = () => {
-   const [searchValue, setSearchValue] = useState("");
-   const [isFocused, setIsFocused] = useState(false);
-   const [suggestions, setSuggestions] = useState<string[]>([]);
-   const [showSuggestions, setShowSuggestions] = useState(false);
-   const [isListening, setIsListening] = useState(false);
+   const dispatch = useDispatch();
+
+   const { searchValue, suggestions, showSuggestions, isListening, isFocused } = useSelector(
+      (state: RootState) => state.search
+   );
 
    const searchInputRef = useRef<HTMLInputElement>(null);
    const suggestionsRef = useRef<HTMLDivElement>(null);
@@ -34,42 +44,43 @@ const SearchBox: React.FC = () => {
       "child friendly voiceover tips",
    ];
 
-   // input change handler
+   // search input handler
    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      setSearchValue(value);
+      dispatch(setSearchValue(value));
 
       if (value.trim()) {
          const filtered = allSuggestions.filter((s) =>
             s.toLowerCase().includes(value.toLowerCase())
          );
-         setSuggestions(filtered);
-         setShowSuggestions(true);
+         dispatch(setSuggestions(filtered));
+         dispatch(setShowSuggestions(true));
       } else {
-         setShowSuggestions(false);
+         dispatch(setShowSuggestions(false));
       }
    };
 
    const handleClear = () => {
-      setSearchValue("");
-      setShowSuggestions(false);
+      dispatch(clearSearch());
       searchInputRef.current?.focus();
    };
 
    const handleVoiceSearch = () => {
-      setIsListening(!isListening);
-      if (!isListening) {
+      const nowListening = !isListening;
+      dispatch(setIsListening(nowListening));
+
+      if (nowListening) {
          setTimeout(() => {
-            setSearchValue("voice search result");
-            setIsListening(false);
+            dispatch(setSearchValue("voice search result"));
+            dispatch(setIsListening(false));
          }, 2000);
       }
    };
 
    const handleSearch = (value: string) => {
+      dispatch(setSearchValue(value));
+      dispatch(setShowSuggestions(false));
       console.log("Search:", value);
-      setSearchValue(value);
-      setShowSuggestions(false);
    };
 
    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -78,7 +89,7 @@ const SearchBox: React.FC = () => {
       }
    };
 
-   // outside click close
+   // outside click to close suggestion box
    useEffect(() => {
       const handleClick = (e: MouseEvent) => {
          if (
@@ -87,18 +98,19 @@ const SearchBox: React.FC = () => {
             searchInputRef.current &&
             !searchInputRef.current.contains(e.target as Node)
          ) {
-            setShowSuggestions(false);
+            dispatch(setShowSuggestions(false));
          }
       };
+
       document.addEventListener("mousedown", handleClick);
       return () => document.removeEventListener("mousedown", handleClick);
-   }, []);
+   }, [dispatch]);
 
    return (
       <div className="relative w-full max-w-xl mx-auto">
-         {/* Search Box */}
+         {/* Search Input Box */}
          <div
-            className={`flex items-center gap-2 px-4  rounded-full border-2 shadow-lg transition-all
+            className={`flex items-center gap-2 px-4 rounded-full border-2 shadow-lg transition-all
                ${isFocused ? "border-primary/20" : "border-gray-300 dark:border-primary/10"}
                bg-white dark:bg-card`}>
             <Search className="w-5 h-5 text-gray-500 dark:text-gray-400" />
@@ -109,8 +121,8 @@ const SearchBox: React.FC = () => {
                placeholder="Search..."
                value={searchValue}
                onChange={handleInputChange}
-               onFocus={() => setIsFocused(true)}
-               onBlur={() => setIsFocused(false)}
+               onFocus={() => dispatch(setIsFocused(true))}
+               onBlur={() => dispatch(setIsFocused(false))}
                onKeyDown={handleKeyDown}
                className="flex-1 bg-transparent outline-none text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
             />
@@ -146,7 +158,7 @@ const SearchBox: React.FC = () => {
             </div>
          )}
 
-         {/* Suggestions Box */}
+         {/* Suggestions Dropdown */}
          {showSuggestions && suggestions.length > 0 && (
             <div
                ref={suggestionsRef}

@@ -1,10 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { apiSlice } from "./slices/apiSlice";
 import authentication from "./slices/authSlice";
+import searchReducer from "./slices/searchSlice";
 
 const rootReducer = {
    [apiSlice.reducerPath]: apiSlice.reducer,
    auth: authentication,
+   search: searchReducer,
 };
 
 export const store = configureStore({
