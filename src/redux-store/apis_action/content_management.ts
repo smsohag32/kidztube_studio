@@ -19,6 +19,14 @@ const contentManagementApi = apiSlice.injectEndpoints({
          }),
          invalidatesTags: ["content"],
       }),
+      bulkDelete: builder.mutation({
+         query: (data) => ({
+            url: `/content/bulk-delete`,
+            method: "POST",
+            body: data,
+         }),
+         invalidatesTags: ["content"],
+      }),
 
       // Get Single Content by ID
       getContentById: builder.query({
@@ -69,9 +77,10 @@ const contentManagementApi = apiSlice.injectEndpoints({
 
       // Admin – Get All Approved Content
       getAdminContent: builder.query({
-         query: () => ({
+         query: ({ page, limit, search, status, approved }) => ({
             url: `/admin/content`,
             method: "GET",
+            params: { page, limit, search, status, approved },
          }),
          providesTags: ["content"],
       }),
@@ -84,6 +93,7 @@ export const {
    useBulkUploadContentMutation,
    useUpdateContentMutation,
    useDeleteContentMutation,
+   useBulkDeleteMutation,
    useChangeContentStatusMutation,
    useApproveContentMutation,
    useGetAdminContentQuery,

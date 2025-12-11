@@ -12,6 +12,7 @@ import { HotTable } from "@handsontable/react";
 import { toast } from "sonner";
 import { useBulkUploadContentMutation } from "@/redux-store/apis_action/content_management";
 import { displayErrors } from "@/helpers/error";
+import TemplateDownload from "./TemplateDownload";
 
 const UploadContent = () => {
    const [uploadState, setUploadState] = useState({
@@ -124,16 +125,19 @@ const UploadContent = () => {
 
    return (
       <div className="w-full px-4 py-5">
-         <div className="mb-8">
-            <div className="inline-flex items-center gap-2 bg-primary/5 px-4 py-1 rounded-full text-xs text-primary">
-               <Film className="h-3 w-3" />
-               KidzTube Bulk Upload
-            </div>
+         <div className="mb-4 flex items-end justify-between w-full">
+            <div className="w-full">
+               <div className="inline-flex items-center gap-2 bg-primary/5 px-4 py-1 rounded-full text-xs text-primary">
+                  <Film className="h-3 w-3" />
+                  KidzTube Bulk Upload
+               </div>
 
-            <h1 className="text-xl font-bold mt-2">Upload Kids Video Content</h1>
-            <p className="text-muted-foreground max-w-2xl">
-               Upload kids entertainment YouTube video URLs with optional categories.
-            </p>
+               <h1 className="text-xl font-bold mt-2">Upload Kids Video Content</h1>
+               <p className="text-muted-foreground max-w-2xl">
+                  Upload kids entertainment YouTube video URLs with optional categories.
+               </p>
+            </div>
+            <TemplateDownload />
          </div>
 
          <Separator className="mb-6" />

@@ -9,7 +9,7 @@ import type { RootState } from "@/redux-store";
 import { useSelector } from "react-redux";
 
 // Constants
-const BATCH_SIZE = 12;
+const BATCH_SIZE = 18;
 const MAX_ITEMS_IN_MEMORY = 100;
 
 // Types

@@ -56,8 +56,8 @@
    --popover-foreground: oklch(0.14 0 0);
 
    /* Primary (KidzTube Blue) */
-   --primary: oklch(0.55 0.12 247); /* #2072B4 */
-   --primary-foreground: oklch(0.99 0 0); /* ALWAYS white */
+   --primary: oklch(0.55 0.12 247);
+   --primary-foreground: oklch(0.99 0 0);
 
    /* Secondary / neutrals */
    --secondary: oklch(0.92 0.02 250);
@@ -106,9 +106,8 @@
    --popover: oklch(0.2 0 0);
    --popover-foreground: oklch(0.98 0 0);
 
-   /* Dark mode primary — lighter blue */
    --primary: oklch(0.75 0.12 247);
-   --primary-foreground: oklch(0.99 0 0); /* FORCE white */
+   --primary-foreground: oklch(0.99 0 0);
 
    --secondary: oklch(0.3 0.01 250);
    --secondary-foreground: oklch(0.98 0 0);
