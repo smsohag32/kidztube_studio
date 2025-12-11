@@ -1,12 +1,10 @@
-"use client";
-
 import type * as React from "react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { TeamSwitcher } from "./team-sitcher";
 import { NavMain } from "./nav-menu";
 import { NavUser } from "./nav-user";
 
-import { House, Plus } from "lucide-react";
+import { Folder, House, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { filterNavItems, permissionHelper } from "@/helpers/permissions";
 
@@ -21,6 +19,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
          title: "Post Content",
          url: "/content/post",
          icon: Plus,
+      },
+      {
+         title: "Content Management",
+         icon: Folder,
+         url: "/content-management",
+         items: [
+            {
+               title: "Content List",
+               url: "/content-management",
+            },
+            {
+               title: "Bulk Upload",
+               url: "/content-management/content-bulk-upload",
+            },
+         ],
       },
    ];
 

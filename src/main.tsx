@@ -5,7 +5,7 @@ import { router } from "./routes/Routers";
 import { Provider } from "react-redux";
 import { store } from "./redux-store";
 import ThemeProvider from "./context/theme/ThemeProvider";
-
+import "handsontable/dist/handsontable.full.min.css";
 createRoot(document.getElementById("root")!).render(
    <>
       <Provider store={store}>

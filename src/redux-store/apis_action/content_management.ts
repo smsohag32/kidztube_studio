@@ -11,6 +11,14 @@ const contentManagementApi = apiSlice.injectEndpoints({
          }),
          invalidatesTags: ["content"],
       }),
+      bulkUploadContent: builder.mutation({
+         query: (formData) => ({
+            url: `/content/bulk-upload`,
+            method: "POST",
+            body: formData,
+         }),
+         invalidatesTags: ["content"],
+      }),
 
       // Get Single Content by ID
       getContentById: builder.query({
@@ -73,6 +81,7 @@ const contentManagementApi = apiSlice.injectEndpoints({
 export const {
    useCreateContentMutation,
    useGetContentByIdQuery,
+   useBulkUploadContentMutation,
    useUpdateContentMutation,
    useDeleteContentMutation,
    useChangeContentStatusMutation,

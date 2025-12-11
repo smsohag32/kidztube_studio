@@ -72,20 +72,35 @@ const TopBar = () => {
                   className="mr-2  !h-4"
                />
                <Breadcrumb className="hidden md:block">
-                  <BreadcrumbList>
+                  {/* Make this the single-line truncating container */}
+                  <BreadcrumbList
+                     className="inline-block max-w-full whitespace-nowrap overflow-hidden text-ellipsis"
+                     style={{ textOverflow: "ellipsis" }} // ensure browser support
+                  >
                      {pathSegments.map((segment, index) => {
                         const href = "/" + pathSegments.slice(0, index + 1).join("/");
                         const isLast = index === pathSegments.length - 1;
+
                         return (
-                           <BreadcrumbItem key={href}>
+                           // Each item must be inline so the container is a single text line
+                           <BreadcrumbItem
+                              key={href}
+                              className="inline-block align-middle">
                               {isLast ? (
-                                 <BreadcrumbPage>{formatBreadcrumb(segment)}</BreadcrumbPage>
+                                 // last item also inline-block
+                                 <BreadcrumbPage className="inline-block align-middle">
+                                    {formatBreadcrumb(segment)}
+                                 </BreadcrumbPage>
                               ) : (
                                  <>
-                                    <BreadcrumbLink to={href}>
+                                    <BreadcrumbLink
+                                       to={href}
+                                       className="inline-block align-middle whitespace-nowrap">
                                        {formatBreadcrumb(segment)}
                                     </BreadcrumbLink>
-                                    <BreadcrumbSeparator />
+
+                                    {/* separator should be inline and not shrink/stack */}
+                                    <BreadcrumbSeparator className="inline-block mx-2 flex-shrink-0" />
                                  </>
                               )}
                            </BreadcrumbItem>

@@ -3,6 +3,7 @@ import MainLayout from "@/layouts/MainLayout";
 import ErrorPage from "@/pages/404/ErrorPage";
 import LoginPage from "@/pages/auth/LoginPage";
 import ContentPost from "@/pages/content_managment/conent_post/ContentPost";
+import UploadContent from "@/pages/content_managment/content_bulk_upload/ContentBulkUpload";
 import DashboardOverview from "@/pages/Dashboard/DashboardOverview";
 import ContentDetails from "@/pages/home_feed/content_details/ContentDetails";
 import HomeContentFeedPage from "@/pages/home_feed/HomeContentFeedPage";
@@ -24,6 +25,10 @@ export const router = createBrowserRouter([
          {
             path: "/content/post",
             element: <ContentPost />,
+         },
+         {
+            path: "/content-management/content-bulk-upload",
+            element: <UploadContent />,
          },
       ],
    },

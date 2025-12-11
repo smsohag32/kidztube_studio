@@ -285,16 +285,6 @@ const ContentContainer: FC = () => {
       }
    }, [isFetching, hasMore]);
 
-   if (!allContents || allContents.length === 0) {
-      return (
-         <div className="flex animate-in fade-in duration-500 flex-col items-center justify-center py-16">
-            <ImageOff className="w-16 h-16 text-muted-foreground/30 mb-4" />
-            <h3 className="text-lg font-semibold text-muted-foreground">No content found</h3>
-            <p className="text-sm text-muted-foreground/70">Check back later for new videos</p>
-         </div>
-      );
-   }
-
    return (
       <div className="min-h-screen bg-background">
          <div className="w-full">
@@ -304,13 +294,21 @@ const ContentContainer: FC = () => {
                      <VideoCardSkeleton key={i} />
                   ))}
                </div>
-            ) : (
+            ) : allContents.length > 0 ? (
                <VideoGrid
                   contents={allContents}
                   isFetching={isFetching}
                   hasMore={hasMore}
                   onLoadMore={handleLoadMore}
                />
+            ) : (
+               <div className="flex animate-in fade-in duration-500 flex-col items-center justify-center py-16">
+                  <ImageOff className="w-16 h-16 text-muted-foreground/30 mb-4" />
+                  <h3 className="text-lg font-semibold text-muted-foreground">No content found</h3>
+                  <p className="text-sm text-muted-foreground/70">
+                     Check back later for new videos
+                  </p>
+               </div>
             )}
          </div>
       </div>
