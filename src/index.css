@@ -148,7 +148,7 @@
       @apply border-border outline-ring/50;
    }
    body {
-      @apply bg-background text-foreground scroll-smooth;
+      @apply bg-background text-foreground scroll-smooth antialiased;
       font-family: "Manrope", sans-serif;
    }
    .table-res {
@@ -157,4 +157,22 @@
    .page-load-ani {
       @apply animate-in duration-300 fade-in;
    }
+
+   /* Sleek custom scrollbars */
+   ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+   }
+   ::-webkit-scrollbar-track {
+      background: transparent;
+   }
+   ::-webkit-scrollbar-thumb {
+      background: var(--muted-foreground);
+      opacity: 0.3;
+      border-radius: 9999px;
+   }
+   ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
+   }
 }
+

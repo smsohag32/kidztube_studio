@@ -68,138 +68,158 @@ export default function LoginPage() {
    const username = watch("username");
 
    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
-         <Card className="w-full py-10 px-6 max-w-[480px]">
-            <CardHeader className="space-y-1 ">
-               <div className="  gap-2 mb-4">
-                  <div>
-                     <Logo className="w-14" />
-                  </div>
+      <div className="min-h-screen relative flex items-center justify-center p-4 bg-background overflow-hidden">
+         {/* Ambient Background Glows */}
+         <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/15 rounded-full blur-3xl pointer-events-none" />
+         <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-sky-500/15 rounded-full blur-3xl pointer-events-none" />
+
+         <Card className="w-full max-w-[440px] rounded-3xl border border-border/80 shadow-2xl bg-card/95 backdrop-blur-xl p-6 sm:p-8 space-y-6 relative z-10">
+            {/* Header / Brand */}
+            <div className="space-y-3 text-center">
+               <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-gradient-to-tr from-primary/20 via-primary/10 to-transparent ring-1 ring-primary/25 shadow-xs mx-auto">
+                  <Logo className="w-12 h-12 object-contain" />
                </div>
-               <Separator />
-               <CardTitle className="text-2xl py-2 text-gray-700 font-bold">
-                  Access your account{" "}
-               </CardTitle>
-            </CardHeader>
-            <CardContent>
-               <form
-                  onSubmit={handleSubmit(onSubmit)}
-                  className="space-y-4">
-                  {/* Email or Username */}
-                  <div className="space-y-2">
-                     {/* <Label htmlFor="username">Email or Username</Label> */}
-                     <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                           {username.includes("@") ? (
-                              <Mail className="h-4 w-4 text-muted-foreground" />
-                           ) : (
-                              <User className="h-4 w-4 text-muted-foreground" />
-                           )}
-                        </div>
-                        <Input
-                           id="username"
-                           type="text"
-                           placeholder="Enter email or username"
-                           className={`pl-10 ${errors.username ? "border-destructive" : ""}`}
-                           {...register("username", {
-                              required: "Email or username is required",
-                              validate: (value) => {
-                                 const trimmedValue = value.trim();
-                                 if (trimmedValue.includes("@")) {
-                                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                                    return (
-                                       emailRegex.test(trimmedValue) ||
-                                       "Please enter a valid email address"
-                                    );
-                                 } else {
-                                    return (
-                                       trimmedValue.length >= 3 ||
-                                       "Username must be at least 3 characters"
-                                    );
-                                 }
-                              },
-                           })}
-                           onChange={(e) => {
-                              const noSpaces = e.target.value.replace(/\s+/g, "");
-                              e.target.value = noSpaces;
-                           }}
-                        />
-                     </div>
-                     {errors.username && (
-                        <p className="text-sm text-destructive">{errors.username.message}</p>
-                     )}
-                  </div>
 
-                  {/* Password */}
-                  <div className="space-y-2">
-                     {/* <Label htmlFor="password">Password</Label> */}
-                     <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                           <Lock className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                        <Input
-                           id="password"
-                           type={showPassword ? "text" : "password"}
-                           placeholder="Enter your password"
-                           className={`pl-10 pr-10 ${errors.password ? "border-destructive" : ""}`}
-                           {...register("password", {
-                              required: "Password is required",
-                              minLength: {
-                                 value: 6,
-                                 message: "Password must be at least 6 characters",
-                              },
-                           })}
-                        />
-                        <button
-                           type="button"
-                           onClick={() => setShowPassword(!showPassword)}
-                           className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                           {showPassword ? (
-                              <EyeOff className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                           ) : (
-                              <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                           )}
-                        </button>
-                     </div>
-                     {errors.password && (
-                        <p className="text-sm text-destructive">{errors.password.message}</p>
-                     )}
-                  </div>
-
-                  {/* Remember Me */}
-                  {/* <div className="flex items-center space-x-2 pb-2">
-                     <Checkbox
-                        id="rememberMe"
-                        {...register("rememberMe")}
-                     />
-                     <Label
-                        htmlFor="rememberMe"
-                        className="text-sm font-medium cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                        Remember me
-                     </Label>
-                  </div> */}
-
-                  <Button
-                     type="submit"
-                     size={"lg"}
-                     className="w-full mt-2"
-                     disabled={isLoading}>
-                     {isLoading ? "Logging in..." : "Login"}
-                  </Button>
-               </form>
-               <div className="pt-2">
-                  <p className="text-gray-700 text-sm text-center mt-4">
-                     Copyright &copy; {new Date().getFullYear()}{" "}
-                     <a
-                        href=""
-                        className="text-blue-600 hover:underline transition-all duration-300 font-semibold">
-                        Project 2morrow Software Ltd.{" "}
-                     </a>
-                     <br /> All rights reserved.
+               <div>
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground">
+                     KidzTube Studio
+                  </h1>
+                  <p className="text-xs text-muted-foreground mt-1">
+                     Enter your credentials to access the creator management portal.
                   </p>
                </div>
-            </CardContent>
+            </div>
+
+            <Separator className="opacity-50" />
+
+            {/* Login Form */}
+            <form
+               onSubmit={handleSubmit(onSubmit)}
+               className="space-y-4">
+               {/* Email or Username */}
+               <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-foreground" htmlFor="username">
+                     Email or Username
+                  </label>
+                  <div className="relative">
+                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
+                        {username.includes("@") ? (
+                           <Mail className="h-4 w-4" />
+                        ) : (
+                           <User className="h-4 w-4" />
+                        )}
+                     </div>
+                     <Input
+                        id="username"
+                        type="text"
+                        placeholder="creator@kidztube.com"
+                        className={`pl-10 text-xs sm:text-sm h-11 rounded-xl ${
+                           errors.username ? "border-destructive ring-1 ring-destructive" : ""
+                        }`}
+                        {...register("username", {
+                           required: "Email or username is required",
+                           validate: (value) => {
+                              const trimmedValue = value.trim();
+                              if (trimmedValue.includes("@")) {
+                                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                 return (
+                                    emailRegex.test(trimmedValue) ||
+                                    "Please enter a valid email address"
+                                 );
+                              } else {
+                                 return (
+                                    trimmedValue.length >= 3 ||
+                                    "Username must be at least 3 characters"
+                                 );
+                              }
+                           },
+                        })}
+                        onChange={(e) => {
+                           const noSpaces = e.target.value.replace(/\s+/g, "");
+                           e.target.value = noSpaces;
+                        }}
+                     />
+                  </div>
+                  {errors.username && (
+                     <p className="text-xs text-destructive mt-1">{errors.username.message}</p>
+                  )}
+               </div>
+
+               {/* Password */}
+               <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-foreground" htmlFor="password">
+                     Password
+                  </label>
+                  <div className="relative">
+                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
+                        <Lock className="h-4 w-4" />
+                     </div>
+                     <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        className={`pl-10 pr-10 text-xs sm:text-sm h-11 rounded-xl ${
+                           errors.password ? "border-destructive ring-1 ring-destructive" : ""
+                        }`}
+                        {...register("password", {
+                           required: "Password is required",
+                           minLength: {
+                              value: 6,
+                              message: "Password must be at least 6 characters",
+                           },
+                        })}
+                     />
+                     <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted-foreground hover:text-foreground">
+                        {showPassword ? (
+                           <EyeOff className="h-4 w-4" />
+                        ) : (
+                           <Eye className="h-4 w-4" />
+                        )}
+                     </button>
+                  </div>
+                  {errors.password && (
+                     <p className="text-xs text-destructive mt-1">{errors.password.message}</p>
+                  )}
+               </div>
+
+               {/* Remember Me */}
+               <div className="flex items-center justify-between text-xs pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-foreground">
+                     <input
+                        type="checkbox"
+                        {...register("rememberMe")}
+                        className="rounded border-border text-primary focus:ring-primary"
+                     />
+                     <span>Remember this device</span>
+                  </label>
+                  <a href="#" className="text-primary hover:underline font-medium">
+                     Forgot password?
+                  </a>
+               </div>
+
+               <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full h-11 rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all"
+                  disabled={isLoading}>
+                  {isLoading ? "Signing in to Studio..." : "Sign in to Studio"}
+               </Button>
+            </form>
+
+            {/* Footer Notice */}
+            <div className="pt-2 text-center border-t border-border/40">
+               <p className="text-xs text-muted-foreground">
+                  Safe & verified streaming platform for kids.
+               </p>
+               <p className="text-[11px] text-muted-foreground/70 mt-1">
+                  Copyright &copy; {new Date().getFullYear()} KidzTube Studio.
+               </p>
+            </div>
          </Card>
       </div>
    );
 }
+
