@@ -1,5 +1,5 @@
 import { useState, type FC, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import {
    useGetPublicContentByIdQuery,
    useGetPublicContentsQuery,
@@ -11,12 +11,16 @@ import {
    ThumbsUp,
    ThumbsDown,
    Share2,
-   MoreVertical,
    Bell,
    Play,
    AlertCircle,
    CheckCircle2,
+   ArrowLeft,
+   Sparkles,
+   Bookmark,
+   Check,
 } from "lucide-react";
+import { toast } from "sonner";
 
 // Types
 interface ContentItem {
@@ -78,7 +82,7 @@ const formatRelativeTime = (date: string): string => {
    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
    const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
-   if (diffMinutes < 1) return "now";
+   if (diffMinutes < 1) return "just now";
    if (diffMinutes < 60) return `${diffMinutes}m ago`;
    if (diffHours < 24) return `${diffHours}h ago`;
    if (diffDays < 7) return `${diffDays}d ago`;
@@ -92,19 +96,19 @@ const VideoPlayer: FC<{ url: string }> = ({ url }) => {
 
    if (!youtubeId) {
       return (
-         <div className="w-full aspect-video bg-black rounded-lg flex items-center justify-center">
-            <AlertCircle className="w-12 h-12 text-red-500" />
+         <div className="w-full aspect-video bg-black/90 rounded-2xl flex flex-col items-center justify-center border border-border/80 text-muted-foreground">
+            <AlertCircle className="w-12 h-12 text-destructive mb-2" />
+            <p className="text-sm font-semibold">Video preview unavailable</p>
          </div>
       );
    }
 
    return (
-      <div className="w-full select-none aspect-video rounded-lg overflow-hidden bg-black">
+      <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black shadow-2xl ring-1 ring-border/80">
          <iframe
-            width="100%"
-            height="100%"
-            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`}
-            title="Video player"
+            className="w-full h-full"
+            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`}
+            title="KidzTube Player"
             allowFullScreen
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
          />
@@ -116,106 +120,184 @@ const VideoPlayer: FC<{ url: string }> = ({ url }) => {
 const VideoInfo: FC<{ content: ContentItem; onShare: () => void }> = ({ content, onShare }) => {
    const [isSubscribed, setIsSubscribed] = useState(false);
    const [liked, setLiked] = useState(false);
+   const [likeCount, setLikeCount] = useState(142);
    const [disliked, setDisliked] = useState(false);
+   const [isSaved, setIsSaved] = useState(false);
+   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
 
    const handleLike = () => {
-      setLiked(!liked);
-      if (disliked) setDisliked(false);
+      if (liked) {
+         setLiked(false);
+         setLikeCount((c) => c - 1);
+      } else {
+         setLiked(true);
+         setLikeCount((c) => c + 1);
+         if (disliked) setDisliked(false);
+         toast.success("Liked this video!");
+      }
    };
 
    const handleDislike = () => {
       setDisliked(!disliked);
-      if (liked) setLiked(false);
+      if (liked) {
+         setLiked(false);
+         setLikeCount((c) => c - 1);
+      }
    };
 
+   const handleSubscribe = () => {
+      setIsSubscribed((prev) => {
+         const next = !prev;
+         if (next) {
+            toast.success(`Subscribed to ${content.addedBy}!`);
+         } else {
+            toast.info(`Unsubscribed from ${content.addedBy}`);
+         }
+         return next;
+      });
+   };
+
+   const handleSave = () => {
+      setIsSaved((prev) => {
+         const next = !prev;
+         if (next) {
+            toast.success("Saved to watch later!");
+         }
+         return next;
+      });
+   };
+
+   const initials = (content.addedBy || "KT")
+      .split(" ")
+      .map((s) => s[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+
    return (
-      <div className="space-y-4">
-         {/* Title */}
-         <div className="space-y-3">
-            <h1 className="text-xl font-bold leading-tight">{content.title}</h1>
+      <div className="space-y-4 pt-1">
+         {/* Title & Category Badge */}
+         <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+               <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize">
+                  {content.category}
+               </Badge>
+               <span className="text-xs text-muted-foreground">
+                  Published {formatRelativeTime(content.createdAt)}
+               </span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground leading-snug">
+               {content.title}
+            </h1>
+         </div>
 
-            {/* Meta Info and Actions */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-               {/* Channel Info */}
-               <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center text-white font-semibold text-sm">
-                     {content.addedBy.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex-1">
-                     <p className="font-semibold text-sm">{content.addedBy}</p>
-                     <p className="text-xs text-muted-foreground">
-                        @{content.addedBy.toLowerCase().replace(/\s+/g, "")}
-                     </p>
-                  </div>
-                  <Button
-                     onClick={() => setIsSubscribed(!isSubscribed)}
-                     variant={isSubscribed ? "outline" : "default"}
-                     size="sm"
-                     className="ml-2 gap-1">
-                     <Bell className="w-4 h-4" />
-                     <span className="hidden sm:inline">
-                        {isSubscribed ? "Subscribed" : "Subscribe"}
+         {/* Creator and Action Bar */}
+         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-2 border-y border-border/40">
+            {/* Channel Info */}
+            <div className="flex items-center gap-3">
+               <div className="size-11 rounded-full bg-gradient-to-tr from-primary via-indigo-500 to-sky-400 text-primary-foreground flex items-center justify-center font-bold text-sm shadow-sm ring-2 ring-background">
+                  {initials}
+               </div>
+               <div>
+                  <div className="flex items-center gap-1.5">
+                     <p className="font-bold text-sm text-foreground">{content.addedBy}</p>
+                     <span className="p-0.5 rounded-full bg-sky-500/15 text-sky-500" title="Verified Creator">
+                        <Check className="w-3 h-3 stroke-[3]" />
                      </span>
-                  </Button>
-               </div>
-
-               {/* Action Buttons */}
-               <div className="flex items-center gap-2">
-                  <div className="flex items-center bg-muted rounded-full p-1">
-                     <Button
-                        onClick={handleLike}
-                        variant="ghost"
-                        size="sm"
-                        className={`gap-1 h-8 ${liked ? "text-primary" : ""}`}>
-                        <ThumbsUp className={`w-4 h-4 ${liked ? "fill-current" : ""}`} />
-                        <span className="text-xs hidden sm:inline">Like</span>
-                     </Button>
-                     <div className="w-px h-6 bg-border" />
-                     <Button
-                        onClick={handleDislike}
-                        variant="ghost"
-                        size="sm"
-                        className={`gap-1 h-8 ${disliked ? "text-primary" : ""}`}>
-                        <ThumbsDown className={`w-4 h-4 ${disliked ? "fill-current" : ""}`} />
-                     </Button>
                   </div>
-
-                  <Button
-                     onClick={onShare}
-                     variant="ghost"
-                     size="sm"
-                     className="gap-1 text-muted-foreground hover:text-foreground h-8">
-                     <Share2 className="w-4 h-4" />
-                     <span className="hidden sm:inline text-xs">Share</span>
-                  </Button>
-
-                  <Button
-                     variant="ghost"
-                     size="sm"
-                     className="text-muted-foreground hover:text-foreground h-8">
-                     <MoreVertical className="w-4 h-4" />
-                  </Button>
+                  <p className="text-xs text-muted-foreground">Verified Kids Creator</p>
                </div>
+               <Button
+                  onClick={handleSubscribe}
+                  variant={isSubscribed ? "outline" : "default"}
+                  size="sm"
+                  className={`ml-3 rounded-full text-xs font-semibold px-4 transition-all ${
+                     isSubscribed
+                        ? "border-border text-foreground hover:bg-muted"
+                        : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+                  }`}>
+                  <Bell className={`w-3.5 h-3.5 mr-1.5 ${isSubscribed ? "fill-current" : ""}`} />
+                  {isSubscribed ? "Subscribed" : "Subscribe"}
+               </Button>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 flex-wrap">
+               {/* Like / Dislike Pill */}
+               <div className="inline-flex items-center rounded-full bg-muted/70 p-0.5 border border-border/60">
+                  <button
+                     onClick={handleLike}
+                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                        liked ? "text-primary bg-background shadow-xs" : "text-muted-foreground hover:text-foreground"
+                     }`}>
+                     <ThumbsUp className={`w-3.5 h-3.5 ${liked ? "fill-current" : ""}`} />
+                     <span>{likeCount}</span>
+                  </button>
+                  <div className="w-px h-4 bg-border/80 mx-0.5" />
+                  <button
+                     onClick={handleDislike}
+                     aria-label="Dislike"
+                     className={`p-1.5 rounded-full text-xs transition-all ${
+                        disliked ? "text-primary bg-background shadow-xs" : "text-muted-foreground hover:text-foreground"
+                     }`}>
+                     <ThumbsDown className={`w-3.5 h-3.5 ${disliked ? "fill-current" : ""}`} />
+                  </button>
+               </div>
+
+               {/* Share Button */}
+               <Button
+                  onClick={onShare}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full text-xs font-semibold gap-1.5 border-border/60 hover:bg-muted">
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>Share</span>
+               </Button>
+
+               {/* Save Button */}
+               <Button
+                  onClick={handleSave}
+                  variant="outline"
+                  size="sm"
+                  className={`rounded-full text-xs font-semibold gap-1.5 border-border/60 hover:bg-muted ${
+                     isSaved ? "text-primary border-primary/40" : ""
+                  }`}>
+                  <Bookmark className={`w-3.5 h-3.5 ${isSaved ? "fill-current" : ""}`} />
+                  <span>{isSaved ? "Saved" : "Save"}</span>
+               </Button>
             </div>
          </div>
 
          {/* Description Section */}
-         <div className="bg-muted/50 rounded-lg p-3 space-y-2">
-            <div className="flex items-center justify-between">
-               <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground font-semibold">
-                     {formatRelativeTime(content.createdAt)}
-                  </span>
-                  <Badge
-                     variant="secondary"
-                     className="text-xs capitalize">
-                     {content.category}
-                  </Badge>
-               </div>
+         <div className="rounded-2xl bg-muted/40 border border-border/60 p-4 space-y-2.5">
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
+               <span>Safe Kids Certified Content</span>
+               <span className="flex items-center gap-1 text-primary">
+                  <Sparkles className="w-3.5 h-3.5" /> Family Friendly
+               </span>
             </div>
-            <p className="text-sm text-muted-foreground line-clamp-3">{content.description}</p>
-            <button className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
-               Show more
+            <p className={`text-sm text-foreground/85 leading-relaxed whitespace-pre-line ${
+               !isDescriptionOpen ? "line-clamp-2" : ""
+            }`}>
+               {content.description || "No description provided for this video."}
+            </p>
+
+            {content.tags && content.tags.length > 0 && (
+               <div className="flex flex-wrap gap-1.5 pt-1">
+                  {content.tags.map((tag, idx) => (
+                     <span
+                        key={idx}
+                        className="text-[11px] font-medium text-primary hover:underline cursor-pointer">
+                        #{tag}
+                     </span>
+                  ))}
+               </div>
+            )}
+
+            <button
+               onClick={() => setIsDescriptionOpen(!isDescriptionOpen)}
+               className="text-xs font-semibold text-primary hover:underline transition-colors block pt-1">
+               {isDescriptionOpen ? "Show less" : "Show more"}
             </button>
          </div>
       </div>
@@ -238,9 +320,9 @@ const RecommendedVideoCard: FC<{ content: ContentItem; onClick: (id: string) => 
    return (
       <div
          onClick={() => onClick(content._id)}
-         className="flex gap-2 cursor-pointer group hover:opacity-80 transition-opacity">
+         className="flex gap-3 cursor-pointer group p-2 rounded-xl hover:bg-muted/50 border border-transparent hover:border-border/60 transition-all duration-200">
          {/* Thumbnail */}
-         <div className="relative flex-shrink-0 w-24 aspect-video rounded overflow-hidden bg-black">
+         <div className="relative flex-shrink-0 w-32 aspect-video rounded-lg overflow-hidden bg-black/90">
             {thumbnailUrl ? (
                <img
                   src={thumbnailUrl}
@@ -252,25 +334,26 @@ const RecommendedVideoCard: FC<{ content: ContentItem; onClick: (id: string) => 
                   <Play className="w-4 h-4 text-muted-foreground/50" />
                </div>
             )}
+
+            {content.duration && (
+               <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] font-semibold px-1.5 py-0.2 rounded">
+                  {content.duration}
+               </div>
+            )}
          </div>
 
          {/* Info */}
          <div className="flex-1 min-w-0 space-y-1">
-            <h3 className="text-xs font-semibold line-clamp-2 group-hover:text-primary transition-colors">
+            <h3 className="text-xs font-semibold line-clamp-2 text-foreground group-hover:text-primary transition-colors leading-snug">
                {content.title}
             </h3>
-            <p className="text-xs text-muted-foreground line-clamp-1">{content.addedBy}</p>
-            <p className="text-xs text-muted-foreground">{formatRelativeTime(content.createdAt)}</p>
+            <p className="text-[11px] text-muted-foreground line-clamp-1">{content.addedBy}</p>
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/80">
+               <span className="capitalize">{content.category}</span>
+               <span>•</span>
+               <span>{formatRelativeTime(content.createdAt)}</span>
+            </div>
          </div>
-
-         {/* More Options */}
-         <Button
-            variant="ghost"
-            size="sm"
-            className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 h-6 w-6 p-0"
-            onClick={(e) => e.stopPropagation()}>
-            <MoreVertical className="w-3 h-3" />
-         </Button>
       </div>
    );
 };
@@ -279,21 +362,31 @@ const RecommendedVideoCard: FC<{ content: ContentItem; onClick: (id: string) => 
 const ContentDetailsSkeleton: FC = () => (
    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-4">
-         <Skeleton className="aspect-video w-full rounded-lg" />
-         <Skeleton className="h-6 w-3/4" />
-         <Skeleton className="h-4 w-1/2" />
-         <Skeleton className="h-20 w-full" />
+         <Skeleton className="aspect-video w-full rounded-2xl" />
+         <Skeleton className="h-7 w-3/4 rounded-lg" />
+         <div className="flex justify-between items-center py-2">
+            <div className="flex items-center gap-3">
+               <Skeleton className="size-10 rounded-full" />
+               <div className="space-y-1">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-3 w-16" />
+               </div>
+            </div>
+            <Skeleton className="h-9 w-32 rounded-full" />
+         </div>
+         <Skeleton className="h-28 w-full rounded-2xl" />
       </div>
-      <div className="space-y-4">
-         {[...Array(6)].map((_, i) => (
+      <div className="space-y-3">
+         <Skeleton className="h-5 w-32" />
+         {[...Array(5)].map((_, i) => (
             <div
                key={i}
-               className="flex gap-2">
-               <Skeleton className="flex-shrink-0 w-24 aspect-video rounded" />
+               className="flex gap-3">
+               <Skeleton className="w-32 aspect-video rounded-lg flex-shrink-0" />
                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-3 w-full" />
-                  <Skeleton className="h-2 w-2/3" />
-                  <Skeleton className="h-2 w-1/2" />
+                  <Skeleton className="h-3.5 w-full" />
+                  <Skeleton className="h-3 w-2/3" />
+                  <Skeleton className="h-2.5 w-1/2" />
                </div>
             </div>
          ))}
@@ -304,8 +397,8 @@ const ContentDetailsSkeleton: FC = () => (
 // Main Component
 const ContentDetails: FC = () => {
    const [searchParams, setSearchParams] = useSearchParams();
+   const navigate = useNavigate();
    const contentId = searchParams.get("id");
-   const [copied, setCopied] = useState(false);
 
    const { data: contentData, isLoading } = useGetPublicContentByIdQuery(contentId, {
       skip: !contentId,
@@ -315,17 +408,20 @@ const ContentDetails: FC = () => {
       data?: ContentListResponse;
    };
 
-   const content: any = useMemo(() => contentData, [contentData]);
+   const content: any = useMemo(() => contentData?.data, [contentData]);
    const recommendedVideos = useMemo(
       () => recommendedData?.data?.content?.filter((c) => c._id !== contentId) || [],
       [recommendedData, contentId]
    );
 
-   const handleShare = () => {
-      const shareUrl = `${window.location.origin}${window.location.pathname}?id=${contentId}`;
-      navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+   const handleShare = async () => {
+      const shareUrl = `${window.location.origin}/content?id=${contentId}`;
+      try {
+         await navigator.clipboard.writeText(shareUrl);
+         toast.success("Link copied to clipboard!");
+      } catch {
+         toast.info("Share URL: " + shareUrl);
+      }
    };
 
    const handleVideoClick = (id: string) => {
@@ -336,69 +432,84 @@ const ContentDetails: FC = () => {
    if (isLoading) {
       return (
          <div className="min-h-screen bg-background">
-            <div className="">
-               <ContentDetailsSkeleton />
-            </div>
+            <ContentDetailsSkeleton />
          </div>
       );
    }
 
    if (!content) {
       return (
-         <div className="min-h-screen bg-background flex items-center justify-center">
-            <div className="text-center space-y-3">
-               <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto" />
-               <h2 className="text-lg font-semibold">Content not found</h2>
-               <p className="text-sm text-muted-foreground">Please select a video to watch</p>
+         <div className="min-h-[60vh] flex flex-col items-center justify-center text-center p-6 rounded-2xl border border-dashed border-border/80 bg-muted/10">
+            <div className="w-16 h-16 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mb-4">
+               <AlertCircle className="w-8 h-8" />
             </div>
+            <h2 className="text-xl font-bold text-foreground">Video Not Found</h2>
+            <p className="text-sm text-muted-foreground max-w-sm mt-1 mb-6">
+               This video could not be loaded or may have been removed.
+            </p>
+            <Button
+               onClick={() => navigate("/")}
+               className="rounded-xl gap-2 font-semibold shadow-sm">
+               <ArrowLeft className="w-4 h-4" />
+               Back to Home Feed
+            </Button>
          </div>
       );
    }
 
    return (
-      <div className="min-h-screen bg-background">
-         <div className="">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-               {/* Main Content - Left Side */}
-               <div className="lg:col-span-2 space-y-4">
-                  {/* Video Player */}
-                  <VideoPlayer url={content.url} />
+      <div className="min-h-screen space-y-4">
+         {/* Top Navigation Bar */}
+         <div className="flex items-center justify-between">
+            <Link
+               to="/"
+               className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/60 px-3 py-1.5 rounded-xl border border-border/60 transition-colors">
+               <ArrowLeft className="w-3.5 h-3.5" />
+               <span>Back to Feed</span>
+            </Link>
 
-                  {/* Video Info */}
-                  <VideoInfo
-                     content={content}
-                     onShare={handleShare}
-                  />
+            <span className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+               <Sparkles className="w-3.5 h-3.5 text-primary" />
+               KidzTube Cinema
+            </span>
+         </div>
 
-                  {/* Share Confirmation */}
-                  {copied && (
-                     <div className="flex items-center gap-2 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-lg p-3 text-sm">
-                        <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
-                        <span className="text-green-800 dark:text-green-300">
-                           Link copied to clipboard
-                        </span>
-                     </div>
-                  )}
+         {/* Grid Layout: Video + Recommendations */}
+         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Content - Left Side */}
+            <div className="lg:col-span-2 space-y-4">
+               <VideoPlayer url={content.url} />
+               <VideoInfo
+                  content={content}
+                  onShare={handleShare}
+               />
+            </div>
+
+            {/* Recommended Videos - Right Side */}
+            <div className="space-y-4">
+               <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
+                     <span>Up Next</span>
+                     <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                        {recommendedVideos.length}
+                     </span>
+                  </h3>
                </div>
 
-               {/* Recommended Videos - Right Side */}
-               <div className="space-y-3">
-                  <h3 className="font-semibold text-sm">Recommended</h3>
-                  <div className="space-y-3 ">
-                     {recommendedVideos.length > 0 ? (
-                        recommendedVideos.map((video) => (
-                           <RecommendedVideoCard
-                              key={video._id}
-                              content={video}
-                              onClick={handleVideoClick}
-                           />
-                        ))
-                     ) : (
-                        <p className="text-xs text-muted-foreground text-center py-8">
-                           No recommendations available
-                        </p>
-                     )}
-                  </div>
+               <div className="space-y-2">
+                  {recommendedVideos.length > 0 ? (
+                     recommendedVideos.map((video) => (
+                        <RecommendedVideoCard
+                           key={video._id}
+                           content={video}
+                           onClick={handleVideoClick}
+                        />
+                     ))
+                  ) : (
+                     <p className="text-xs text-muted-foreground text-center py-8">
+                        No additional recommendations
+                     </p>
+                  )}
                </div>
             </div>
          </div>
@@ -407,3 +518,4 @@ const ContentDetails: FC = () => {
 };
 
 export default ContentDetails;
+
