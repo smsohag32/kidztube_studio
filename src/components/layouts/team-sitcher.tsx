@@ -1,30 +1,42 @@
 import logo from "@/assets/logo/logo2.svg";
 import { SidebarMenu, SidebarMenuButton } from "@/components/ui/sidebar";
 import { Separator } from "../ui/separator";
+import { Sparkles } from "lucide-react";
 
 export function TeamSwitcher() {
    return (
       <SidebarMenu>
          <SidebarMenuButton
             size="lg"
-            className="data-[state=open]:bg-sidebar-accent  -mt-1  items-center data-[state=open]:text-sidebar-accent-foreground">
-            <div className="flex aspect-square size-8 items-center justify-center rounded-lg  text-sidebar-primary-foreground">
+            className="data-[state=open]:bg-sidebar-accent/80 -mt-1 items-center data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/50 transition-all rounded-xl p-2">
+            <div className="relative flex aspect-square size-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent p-1.5 ring-1 ring-primary/20 shadow-xs">
                <img
                   src={logo}
-                  className="w-full object-contain"
-                  alt="Board  Flow"
+                  className="w-full h-full object-contain"
+                  alt="KidzTube Studio"
                />
-            </div>
-            <div className="grid flex-1 justify-start  items-center text-left text-sm font-semibold leading-tight">
-               <span className="truncate flex-col flex w-full text-[22px] pb-[3px]  ">
-                  <span className="text-[18px] font-bold">KidzTube</span>{" "}
-                  <span className="text-sm">Studio</span>
+               <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
                </span>
-               {/* <span className="truncate text-xs">p2m</span> */}
             </div>
-            {/* <ChevronsUpDown className="ml-auto" /> */}
+            <div className="grid flex-1 justify-start items-center text-left leading-tight pl-1">
+               <div className="flex items-center gap-1.5">
+                  <span className="text-[17px] font-bold bg-gradient-to-r from-primary via-indigo-500 to-sky-400 bg-clip-text text-transparent tracking-tight">
+                     KidzTube
+                  </span>
+                  <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/10 text-primary px-1.5 py-0.5 text-[10px] font-semibold tracking-wide">
+                     <Sparkles className="h-2.5 w-2.5" />
+                     STUDIO
+                  </span>
+               </div>
+               <span className="truncate text-xs text-muted-foreground font-normal">
+                  Safe Video Platform
+               </span>
+            </div>
          </SidebarMenuButton>
-         <Separator />
+         <Separator className="my-1.5 opacity-60" />
       </SidebarMenu>
    );
 }
+
