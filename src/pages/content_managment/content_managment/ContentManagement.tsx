@@ -181,87 +181,125 @@ const ContentManagement = () => {
    }, []);
 
    return (
-      <div className="">
-         <h1 className="text-2xl font-bold mb-6">Content Management</h1>
+      <div className="space-y-6">
+         {/* Page Header */}
+         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/40">
+            <div>
+               <h1 className="text-2xl font-bold tracking-tight text-foreground">Content Management</h1>
+               <p className="text-xs sm:text-sm text-muted-foreground">
+                  Review, approve, and manage video statuses across the platform.
+               </p>
+            </div>
+            <div className="flex items-center gap-2.5">
+               <Button
+                  asChild
+                  className="rounded-xl text-xs font-semibold gap-1.5 shadow-xs">
+                  <a href="/content/post">
+                     <PlusCircle className="w-3.5 h-3.5" />
+                     <span>New Video</span>
+                  </a>
+               </Button>
+            </div>
+         </div>
 
          {/* Filters and Tabs */}
-         <div className="flex flex-col sm:flex-row gap-3 mb-4">
+         <div className="flex flex-col lg:flex-row gap-3">
             <div className="flex-1 flex gap-2">
                <Input
                   placeholder="Search by title, URL, or category..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                  className="rounded-xl text-xs sm:text-sm h-10"
                />
-               <Button onClick={handleSearch}>Search</Button>
+               <Button
+                  onClick={handleSearch}
+                  className="rounded-xl text-xs font-semibold px-4 h-10">
+                  Search
+               </Button>
             </div>
 
-            <div className="flex gap-2 items-center">
+            <div className="flex flex-wrap gap-2 items-center">
                <Tabs
                   value={activeTab}
                   onValueChange={handleTabChange}>
-                  <TabsList>
-                     <TabsTrigger value="approved">Approved</TabsTrigger>
-                     <TabsTrigger value="pending">Pending</TabsTrigger>
+                  <TabsList className="h-10 rounded-xl p-1">
+                     <TabsTrigger
+                        value="approved"
+                        className="rounded-lg text-xs font-semibold">
+                        Approved
+                     </TabsTrigger>
+                     <TabsTrigger
+                        value="pending"
+                        className="rounded-lg text-xs font-semibold">
+                        Pending
+                     </TabsTrigger>
                   </TabsList>
                </Tabs>
+
                <Select
                   value={statusFilter}
                   onValueChange={handleStatusFilterChange}>
-                  <SelectTrigger className="w-40">
-                     <SelectValue placeholder="Select Status" />
+                  <SelectTrigger className="w-36 h-10 rounded-xl text-xs font-medium">
+                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-xl">
                      <SelectItem value="all">All Status</SelectItem>
-                     <SelectItem value="active">Active</SelectItem>
-                     <SelectItem value="inactive">Inactive</SelectItem>
+                     <SelectItem value="active">Active Only</SelectItem>
+                     <SelectItem value="inactive">Inactive Only</SelectItem>
                   </SelectContent>
                </Select>
-               <Button
-                  variant="destructive"
-                  onClick={handleBulkDelete}
-                  disabled={!selectedItems.size}>
-                  {bulkDeleting ? "Deleting" : `Bulk Delete (${selectedItems.size})`}
-               </Button>
+
+               {selectedItems.size > 0 && (
+                  <Button
+                     variant="destructive"
+                     onClick={handleBulkDelete}
+                     className="rounded-xl text-xs font-semibold h-10 gap-1.5 animate-in fade-in">
+                     <Trash2 className="w-3.5 h-3.5" />
+                     {bulkDeleting ? "Deleting..." : `Delete (${selectedItems.size})`}
+                  </Button>
+               )}
             </div>
          </div>
 
-         {/* Table */}
-         <div className="table-res">
+         {/* Table Card */}
+         <div className="rounded-2xl border border-border/70 overflow-hidden bg-card shadow-xs">
             <Table>
-               <TableHeader>
-                  <TableRow>
-                     <TableHead className="w-12">
+               <TableHeader className="bg-muted/40">
+                  <TableRow className="hover:bg-transparent">
+                     <TableHead className="w-12 pl-4">
                         <Checkbox
-                           checked={content?.every((item) => selectedItems.has(item._id)) ?? false}
+                           checked={content?.length ? content.every((item) => selectedItems.has(item._id)) : false}
                            onCheckedChange={(value) => toggleSelectAll(value === true)}
                            aria-label="Select all content"
                         />
                      </TableHead>
-                     <TableHead>URL</TableHead>
-                     <TableHead>Title</TableHead>
-                     <TableHead>Category</TableHead>
-                     <TableHead>Status</TableHead>
-                     <TableHead>Approval</TableHead>
-                     <TableHead className="text-right">Actions</TableHead>
+                     <TableHead className="text-xs font-bold text-foreground">Video Title</TableHead>
+                     <TableHead className="text-xs font-bold text-foreground">Category</TableHead>
+                     <TableHead className="text-xs font-bold text-foreground">URL</TableHead>
+                     <TableHead className="text-xs font-bold text-foreground">Status</TableHead>
+                     <TableHead className="text-xs font-bold text-foreground">Approval</TableHead>
+                     <TableHead className="text-right text-xs font-bold text-foreground pr-4">Actions</TableHead>
                   </TableRow>
                </TableHeader>
-               <TableBody>
+               <TableBody className="divide-y divide-border/40">
                   {isLoading || isFetching ? (
                      <TableRow>
                         <TableCell
                            colSpan={7}
-                           className="text-center py-8">
-                           <div className="flex items-center justify-center gap-2">
-                              <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-gray-900 rounded-full" />
-                              Loading content...
+                           className="text-center py-12">
+                           <div className="flex items-center justify-center gap-2.5 text-xs text-muted-foreground font-medium">
+                              <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+                              <span>Loading studio videos...</span>
                            </div>
                         </TableCell>
                      </TableRow>
                   ) : content?.length ? (
                      content.map((item) => (
-                        <TableRow key={item._id}>
-                           <TableCell>
+                        <TableRow
+                           key={item._id}
+                           className="hover:bg-muted/40 transition-colors">
+                           <TableCell className="pl-4">
                               <Checkbox
                                  checked={selectedItems.has(item._id)}
                                  onCheckedChange={(value) =>
@@ -270,46 +308,58 @@ const ContentManagement = () => {
                                  aria-label={`Select ${item.title}`}
                               />
                            </TableCell>
+                           <TableCell className="font-semibold text-xs text-foreground max-w-xs truncate">
+                              {item.title || "Untitled Video"}
+                           </TableCell>
                            <TableCell>
+                              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary capitalize border border-primary/20">
+                                 {item.category || "General"}
+                              </span>
+                           </TableCell>
+                           <TableCell className="max-w-[180px]">
                               <a
                                  href={item.url}
                                  target="_blank"
                                  rel="noopener noreferrer"
-                                 className="text-blue-600 underline truncate block"
+                                 className="text-primary hover:underline text-xs truncate block"
                                  title={item.url}>
                                  {item.url}
                               </a>
                            </TableCell>
-                           <TableCell>{item.title || "Unknown Title"}</TableCell>
                            <TableCell>
-                              <Badge variant="outline">{item.category}</Badge>
+                              <div className="flex items-center gap-2">
+                                 <Switch
+                                    checked={item.status}
+                                    onCheckedChange={() =>
+                                       openStatusDialog(item._id, item.title, item.status)
+                                    }
+                                 />
+                                 <span className="text-[11px] font-medium text-muted-foreground">
+                                    {item.status ? "Active" : "Paused"}
+                                 </span>
+                              </div>
                            </TableCell>
                            <TableCell>
-                              <Switch
-                                 checked={item.status}
-                                 onCheckedChange={() =>
-                                    openStatusDialog(item._id, item.title, item.status)
-                                 }
-                              />
+                              {item.isApproved ? (
+                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                    Approved
+                                 </span>
+                              ) : (
+                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                                    Pending
+                                 </span>
+                              )}
                            </TableCell>
-                           <TableCell>
-                              <Badge variant={item.isApproved ? "default" : "secondary"}>
-                                 {item.isApproved ? "Approved" : "Pending"}
-                              </Badge>
-                           </TableCell>
-                           <TableCell className="text-right flex justify-end gap-2">
-                              <Button
-                                 variant="outline"
-                                 size="sm">
-                                 <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                 variant="outline"
-                                 size="sm"
-                                 onClick={() => openDeleteDialog(item._id, item.title)}
-                                 className="hover:bg-red-50 hover:text-red-600">
-                                 <Trash2 className="w-4 h-4" />
-                              </Button>
+                           <TableCell className="text-right pr-4">
+                              <div className="flex items-center justify-end gap-1.5">
+                                 <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => openDeleteDialog(item._id, item.title)}
+                                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg">
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                 </Button>
+                              </div>
                            </TableCell>
                         </TableRow>
                      ))
@@ -317,8 +367,11 @@ const ContentManagement = () => {
                      <TableRow>
                         <TableCell
                            colSpan={7}
-                           className="text-center py-8 text-gray-500">
-                           No content found.
+                           className="text-center py-14 text-muted-foreground">
+                           <div className="space-y-1">
+                              <p className="text-sm font-semibold text-foreground">No videos found</p>
+                              <p className="text-xs text-muted-foreground">Try adjusting your filters or upload new content.</p>
+                           </div>
                         </TableCell>
                      </TableRow>
                   )}
@@ -327,8 +380,8 @@ const ContentManagement = () => {
          </div>
 
          {/* Pagination */}
-         {content?.length && (
-            <div className="mt-4 flex justify-between">
+         {Boolean(content?.length) && (
+            <div className="flex justify-between items-center pt-2">
                <PaginationControls
                   currentPage={page}
                   totalPages={totalPages}
@@ -336,6 +389,7 @@ const ContentManagement = () => {
                />
             </div>
          )}
+
 
          {/* Confirmation Dialog */}
          <AlertDialog

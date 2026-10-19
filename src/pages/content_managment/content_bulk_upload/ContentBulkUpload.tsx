@@ -124,44 +124,44 @@ const UploadContent = () => {
    };
 
    return (
-      <div className="w-full px-4 py-5">
-         <div className="mb-4 flex items-end justify-between w-full">
-            <div className="w-full">
-               <div className="inline-flex items-center gap-2 bg-primary/5 px-4 py-1 rounded-full text-xs text-primary">
-                  <Film className="h-3 w-3" />
-                  KidzTube Bulk Upload
+      <div className="space-y-6 max-w-5xl mx-auto py-2">
+         {/* Page Header */}
+         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/40">
+            <div className="space-y-1">
+               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                  <Film className="h-3.5 w-3.5" />
+                  <span>KidzTube Bulk Studio</span>
                </div>
-
-               <h1 className="text-xl font-bold mt-2">Upload Kids Video Content</h1>
-               <p className="text-muted-foreground max-w-2xl">
-                  Upload kids entertainment YouTube video URLs with optional categories.
+               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                  Bulk Content Upload
+               </h1>
+               <p className="text-xs sm:text-sm text-muted-foreground">
+                  Upload multiple kids entertainment and educational videos via Excel or CSV spreadsheet.
                </p>
             </div>
             <TemplateDownload />
          </div>
 
-         <Separator className="mb-6" />
-
          {!uploadState.isComplete ? (
-            <Card>
-               <CardHeader>
-                  <div className="flex items-end justify-between">
-                     <div className="space-y-2">
-                        <CardTitle className="flex items-center gap-2">
-                           <Upload className="h-5 w-5" />
-                           Upload Content Excel
-                        </CardTitle>
-                        <CardDescription>Upload Excel with columns: url, category</CardDescription>
-                     </div>
-                  </div>
+            <Card className="rounded-2xl border border-border/80 shadow-sm overflow-hidden bg-card">
+               <CardHeader className="pb-4">
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                     <Upload className="h-4 w-4 text-primary" />
+                     Spreadsheet File Upload
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                     Ensure your spreadsheet includes required columns: <code className="bg-muted px-1.5 py-0.5 rounded text-primary font-mono text-xs">url</code> and optional <code className="bg-muted px-1.5 py-0.5 rounded text-primary font-mono text-xs">category</code>.
+                  </CardDescription>
                </CardHeader>
 
-               <CardContent>
+               <CardContent className="space-y-4">
                   <div
                      className={cn(
-                        "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer",
-                        isDragOver ? "border-primary bg-primary/5" : "border-muted-foreground/30",
-                        uploadState.isUploading && "pointer-events-none opacity-50"
+                        "border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all duration-300",
+                        isDragOver
+                           ? "border-primary bg-primary/5 scale-[1.01]"
+                           : "border-border/80 hover:border-primary/50 hover:bg-muted/30 bg-muted/10",
+                        uploadState.isUploading && "pointer-events-none opacity-60"
                      )}
                      onDrop={(e) => {
                         e.preventDefault();
@@ -182,24 +182,37 @@ const UploadContent = () => {
                         className="hidden"
                      />
 
-                     <div className="flex flex-col items-center gap-4">
+                     <div className="flex flex-col items-center gap-3">
                         <div
                            className={cn(
-                              "rounded-full p-4",
-                              isDragOver ? "bg-primary text-white" : "bg-muted"
+                              "rounded-2xl p-4 transition-transform duration-300 shadow-xs",
+                              isDragOver
+                                 ? "bg-primary text-primary-foreground scale-110"
+                                 : "bg-primary/10 text-primary"
                            )}>
                            <FileSpreadsheet className="h-8 w-8" />
                         </div>
 
-                        <p className="font-medium text-lg">
-                           {isDragOver ? "Drop file here" : "Drop file here or click to browse"}
-                        </p>
-                        <p className="text-muted-foreground text-sm">Supports .xlsx .xls .csv</p>
+                        <div>
+                           <p className="font-bold text-base text-foreground">
+                              {isDragOver ? "Drop spreadsheet here" : "Drag and drop your spreadsheet here"}
+                           </p>
+                           <p className="text-xs text-muted-foreground mt-1">
+                              or click anywhere to browse from your computer
+                           </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 mt-2">
+                           <Badge variant="outline" className="text-[10px] font-semibold uppercase">.XLSX</Badge>
+                           <Badge variant="outline" className="text-[10px] font-semibold uppercase">.XLS</Badge>
+                           <Badge variant="outline" className="text-[10px] font-semibold uppercase">.CSV</Badge>
+                        </div>
 
                         {!uploadState.isUploading && (
                            <Button
                               variant="outline"
-                              className="bg-transparent mt-2">
+                              size="sm"
+                              className="rounded-xl mt-2 text-xs font-semibold border-border/80">
                               Browse Files
                            </Button>
                         )}
@@ -207,14 +220,14 @@ const UploadContent = () => {
                   </div>
 
                   {uploadState.isUploading && (
-                     <div className="mt-6">
-                        <div className="flex justify-between text-sm mb-1">
-                           <span>Processing file…</span>
+                     <div className="space-y-2 pt-2">
+                        <div className="flex justify-between text-xs font-medium text-foreground">
+                           <span>Parsing and validating rows…</span>
                            <span>{uploadState.progress}%</span>
                         </div>
                         <Progress
                            value={uploadState.progress}
-                           className="h-2"
+                           className="h-2 rounded-full"
                         />
                      </div>
                   )}
@@ -222,38 +235,41 @@ const UploadContent = () => {
                   {uploadState.error && (
                      <Alert
                         variant="destructive"
-                        className="mt-4">
+                        className="rounded-xl">
                         <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>{uploadState.error}</AlertDescription>
+                        <AlertDescription className="text-xs">{uploadState.error}</AlertDescription>
                      </Alert>
                   )}
                </CardContent>
             </Card>
          ) : (
             <>
-               <Card>
-                  <CardContent>
-                     <div className="flex justify-between items-center">
+               <Card className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 shadow-xs">
+                  <CardContent className="p-4">
+                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                         <div className="flex items-center gap-3">
-                           <div className="bg-green-100 p-2 rounded-full">
-                              <CheckCircle className="h-5 w-5 text-green-600" />
+                           <div className="bg-emerald-500/15 p-2 rounded-xl text-emerald-600 dark:text-emerald-400">
+                              <CheckCircle className="h-5 w-5" />
                            </div>
 
                            <div>
-                              <h3 className="font-semibold">File parsed successfully</h3>
-                              <p className="text-sm text-muted-foreground">
+                              <h3 className="font-bold text-sm text-foreground">File parsed successfully</h3>
+                              <p className="text-xs text-muted-foreground">
                                  {fileData.name} • {(fileData.size / 1024 / 1024).toFixed(2)} MB
                               </p>
                            </div>
                         </div>
 
-                        <div className="flex gap-2">
-                           <Badge variant="secondary">{fileData.data.length} rows</Badge>
+                        <div className="flex items-center gap-2">
+                           <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-0 text-xs font-semibold">
+                              {fileData.data.length} rows loaded
+                           </Badge>
                            <Button
                               variant="outline"
                               size="sm"
+                              className="rounded-xl text-xs h-8 border-border"
                               onClick={resetUpload}>
-                              <X className="h-4 w-4 mr-1" /> Start Over
+                              <X className="h-3.5 w-3.5 mr-1" /> Replace File
                            </Button>
                         </div>
                      </div>
